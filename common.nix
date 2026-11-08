@@ -27,12 +27,13 @@
     kubectl
     kubernetes-helm
     kubectx
+    talosctl
   ];
 
   home.shellAliases = {
     k = "kubectl";
     kctx = "kubectx";
-    kn = "kubens";
+    kns = "kubens";
   };
 
   home.sessionVariables = {
