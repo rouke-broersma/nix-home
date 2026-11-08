@@ -1,5 +1,5 @@
 # ~/.config/home-manager/zsh.nix
-{ pkgs, ... }: 
+{ lib, pkgs, ... }:
 
 {
   programs.bash = {
@@ -17,20 +17,11 @@
     syntaxHighlighting.enable = true;
     enableCompletion = true;
 
-    completionInit = ''
-      zstyle ':completion:*' matcher-list 'm:{a-zA-Z-_}={A-Za-z_-}'
-    '';
-
     plugins = [
       {
         name = "powerlevel10k";
         src = pkgs.zsh-powerlevel10k;
         file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
-      }
-      {
-        name = "fast-syntax-highlighting";
-        src = pkgs.zsh-fast-syntax-highlighting;
-        file = "share/zsh/site-functions/fast-syntax-highlighting.plugin.zsh";
       }
       {
         name = "zsh-history-substring-search";
@@ -39,29 +30,23 @@
       }
     ];
 
-    # Raw Zsh Options (replaces setopt lines)
-    initContent = ''
-      # Native Zsh Options
-      setopt extended_glob
-      setopt HIST_IGNORE_SPACE
+    initContent = lib.mkMerge [
+      (lib.mkOrder 500 ''
+        if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
+          source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
+        fi
+      '')
+      (lib.mkOrder 1000 ''
+        setopt extended_glob
+        setopt HIST_IGNORE_SPACE
+        zstyle ':completion:*' matcher-list 'm:{a-zA-Z-_}={A-Za-z_-}'
 
-      # Load P10k instant prompt
-      if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${USER}.zsh" ]]; then
-        source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${USER}.zsh"
-      fi
+        [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-      # Source custom prompt config if present
-      [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-      # Keybindings for History Substring Search (Up / Down arrows)
-      bindkey '^[[A' history-substring-search-up
-      bindkey '^[[B' history-substring-search-down
-
-      # Auto-bridge wsl2-ssh-agent socket
-      if command -v wsl2-ssh-agent >/dev/null 2>&1; then
-        eval $(wsl2-ssh-agent)
-      fi
-    '';
+        bindkey '^[[A' history-substring-search-up
+        bindkey '^[[B' history-substring-search-down
+      '')
+    ];
   };
 
   home.file.".p10k.zsh".source = ./.p10k.zsh;

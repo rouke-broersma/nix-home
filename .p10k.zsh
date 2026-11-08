@@ -81,8 +81,6 @@
     aws                     # aws profile (https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html)
     aws_eb_env              # aws elastic beanstalk environment (https://aws.amazon.com/elasticbeanstalk/)
     azure                   # azure account name (https://docs.microsoft.com/en-us/cli/azure)
-    gcloud                  # google cloud cli account and project (https://cloud.google.com/)
-    google_app_cred         # google application credentials (https://cloud.google.com/docs/authentication/production)
     toolbox                 # toolbox name (https://github.com/containers/toolbox)
     context                 # user@hostname
     nordvpn                 # nordvpn connection status, linux only (https://nordvpn.com/)
@@ -1439,101 +1437,6 @@
   typeset -g POWERLEVEL9K_AZURE_OTHER_FOREGROUND=32
   # Custom icon.
   # typeset -g POWERLEVEL9K_AZURE_OTHER_VISUAL_IDENTIFIER_EXPANSION='⭐'
-
-  ##########[ gcloud: google cloud account and project (https://cloud.google.com/) ]###########
-  # Show gcloud only when the command you are typing invokes one of these tools.
-  # Tip: Remove the next line to always show gcloud.
-  typeset -g POWERLEVEL9K_GCLOUD_SHOW_ON_COMMAND='gcloud|gcs|gsutil'
-   # Google cloud color.
-  typeset -g POWERLEVEL9K_GCLOUD_FOREGROUND=32
-
-  # Google cloud format. Change the value of POWERLEVEL9K_GCLOUD_PARTIAL_CONTENT_EXPANSION and/or
-  # POWERLEVEL9K_GCLOUD_COMPLETE_CONTENT_EXPANSION if the default is too verbose or not informative
-  # enough. You can use the following parameters in the expansions. Each of them corresponds to the
-  # output of `gcloud` tool.
-  #
-  #   Parameter                | Source
-  #   -------------------------|--------------------------------------------------------------------
-  #   P9K_GCLOUD_CONFIGURATION | gcloud config configurations list --format='value(name)'
-  #   P9K_GCLOUD_ACCOUNT       | gcloud config get-value account
-  #   P9K_GCLOUD_PROJECT_ID    | gcloud config get-value project
-  #   P9K_GCLOUD_PROJECT_NAME  | gcloud projects describe $P9K_GCLOUD_PROJECT_ID --format='value(name)'
-  #
-  # Note: ${VARIABLE//\%/%%} expands to ${VARIABLE} with all occurrences of '%' replaced with '%%'.
-  #
-  # Obtaining project name requires sending a request to Google servers. This can take a long time
-  # and even fail. When project name is unknown, P9K_GCLOUD_PROJECT_NAME is not set and gcloud
-  # prompt segment is in state PARTIAL. When project name gets known, P9K_GCLOUD_PROJECT_NAME gets
-  # set and gcloud prompt segment transitions to state COMPLETE.
-  #
-  # You can customize the format, icon and colors of gcloud segment separately for states PARTIAL
-  # and COMPLETE. You can also hide gcloud in state PARTIAL by setting
-  # POWERLEVEL9K_GCLOUD_PARTIAL_VISUAL_IDENTIFIER_EXPANSION and
-  # POWERLEVEL9K_GCLOUD_PARTIAL_CONTENT_EXPANSION to empty.
-  typeset -g POWERLEVEL9K_GCLOUD_PARTIAL_CONTENT_EXPANSION='${P9K_GCLOUD_PROJECT_ID//\%/%%}'
-  typeset -g POWERLEVEL9K_GCLOUD_COMPLETE_CONTENT_EXPANSION='${P9K_GCLOUD_PROJECT_NAME//\%/%%}'
-
-  # Send a request to Google (by means of `gcloud projects describe ...`) to obtain project name
-  # this often. Negative value disables periodic polling. In this mode project name is retrieved
-  # only when the current configuration, account or project id changes.
-  typeset -g POWERLEVEL9K_GCLOUD_REFRESH_PROJECT_NAME_SECONDS=60
-
-  # Custom icon.
-  # typeset -g POWERLEVEL9K_GCLOUD_VISUAL_IDENTIFIER_EXPANSION='⭐'
-
-  #[ google_app_cred: google application credentials (https://cloud.google.com/docs/authentication/production) ]#
-  # Show google_app_cred only when the command you are typing invokes one of these tools.
-  # Tip: Remove the next line to always show google_app_cred.
-  typeset -g POWERLEVEL9K_GOOGLE_APP_CRED_SHOW_ON_COMMAND='terraform|pulumi|terragrunt'
-
-  # Google application credentials classes for the purpose of using different colors, icons and
-  # expansions with different credentials.
-  #
-  # POWERLEVEL9K_GOOGLE_APP_CRED_CLASSES is an array with even number of elements. The first
-  # element in each pair defines a pattern against which the current kubernetes context gets
-  # matched. More specifically, it's P9K_CONTENT prior to the application of context expansion
-  # (see below) that gets matched. If you unset all POWERLEVEL9K_GOOGLE_APP_CRED_*CONTENT_EXPANSION
-  # parameters, you'll see this value in your prompt. The second element of each pair in
-  # POWERLEVEL9K_GOOGLE_APP_CRED_CLASSES defines the context class. Patterns are tried in order.
-  # The first match wins.
-  #
-  # For example, given these settings:
-  #
-  #   typeset -g POWERLEVEL9K_GOOGLE_APP_CRED_CLASSES=(
-  #     '*:*prod*:*'  PROD
-  #     '*:*test*:*'  TEST
-  #     '*'           DEFAULT)
-  #
-  # If your current Google application credentials is "service_account deathray-testing x@y.com",
-  # its class is TEST because it doesn't match the pattern '* *prod* *' but does match '* *test* *'.
-  #
-  # You can define different colors, icons and content expansions for different classes:
-  #
-  #   typeset -g POWERLEVEL9K_GOOGLE_APP_CRED_TEST_FOREGROUND=28
-  #   typeset -g POWERLEVEL9K_GOOGLE_APP_CRED_TEST_VISUAL_IDENTIFIER_EXPANSION='⭐'
-  #   typeset -g POWERLEVEL9K_GOOGLE_APP_CRED_TEST_CONTENT_EXPANSION='$P9K_GOOGLE_APP_CRED_PROJECT_ID'
-  typeset -g POWERLEVEL9K_GOOGLE_APP_CRED_CLASSES=(
-      # '*:*prod*:*'  PROD    # These values are examples that are unlikely
-      # '*:*test*:*'  TEST    # to match your needs. Customize them as needed.
-      '*'             DEFAULT)
-  typeset -g POWERLEVEL9K_GOOGLE_APP_CRED_DEFAULT_FOREGROUND=32
-  # typeset -g POWERLEVEL9K_GOOGLE_APP_CRED_DEFAULT_VISUAL_IDENTIFIER_EXPANSION='⭐'
-
-  # Use POWERLEVEL9K_GOOGLE_APP_CRED_CONTENT_EXPANSION to specify the content displayed by
-  # google_app_cred segment. Parameter expansions are very flexible and fast, too. See reference:
-  # http://zsh.sourceforge.net/Doc/Release/Expansion.html#Parameter-Expansion.
-  #
-  # You can use the following parameters in the expansion. Each of them corresponds to one of the
-  # fields in the JSON file pointed to by GOOGLE_APPLICATION_CREDENTIALS.
-  #
-  #   Parameter                        | JSON key file field
-  #   ---------------------------------+---------------
-  #   P9K_GOOGLE_APP_CRED_TYPE         | type
-  #   P9K_GOOGLE_APP_CRED_PROJECT_ID   | project_id
-  #   P9K_GOOGLE_APP_CRED_CLIENT_EMAIL | client_email
-  #
-  # Note: ${VARIABLE//\%/%%} expands to ${VARIABLE} with all occurrences of '%' replaced by '%%'.
-  typeset -g POWERLEVEL9K_GOOGLE_APP_CRED_DEFAULT_CONTENT_EXPANSION='${P9K_GOOGLE_APP_CRED_PROJECT_ID//\%/%%}'
 
   ##############[ toolbox: toolbox name (https://github.com/containers/toolbox) ]###############
   # Toolbox color.

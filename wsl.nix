@@ -12,6 +12,11 @@
   ];
 
   programs.zsh.initContent = ''
-    eval $(wsl2-ssh-agent)
+    if ! wsl_agent_init="$(wsl2-ssh-agent)" ||
+       [[ -z "$wsl_agent_init" ]] ||
+       ! eval "$wsl_agent_init"; then
+      print -u2 "Failed to initialize the WSL SSH agent bridge."
+    fi
+    unset wsl_agent_init
   '';
 }

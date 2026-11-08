@@ -2,8 +2,7 @@
 { lib, ... }:
 
 let
-  isWSL = builtins.pathExists "/proc/sys/kernel/osrelease" &&
-          lib.strings.hasInfix "microsoft" (builtins.readFile "/proc/sys/kernel/osrelease");
+  isWSL = builtins.getEnv "WSL_DISTRO_NAME" != "";
 in
 {
   imports = [ 
