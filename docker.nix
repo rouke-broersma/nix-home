@@ -3,19 +3,21 @@
 
 let
   dockerPkg = pkgs.docker;
+  
   startDocker = pkgs.writeShellScriptBin "start-docker" ''
     if systemctl --user start docker.service; then
       echo "Rootless Docker started."
     else
-      echo "Failed to start rootless Docker; inspect the docker.service user journal." >&2
+      echo "Failed to start rootless Docker; inspect with: journalctl --user -u docker.service -e" >&2
       exit 1
     fi
   '';
+  
   stopDocker = pkgs.writeShellScriptBin "stop-docker" ''
     if systemctl --user stop docker.service; then
       echo "Rootless Docker stopped."
     else
-      echo "Failed to stop rootless Docker; inspect the docker.service user journal." >&2
+      echo "Failed to stop rootless Docker; inspect with: journalctl --user -u docker.service -e" >&2
       exit 1
     fi
   '';
@@ -31,13 +33,10 @@ in
     stopDocker
   ];
 
-  home.sessionVariables.DOCKER_HOST = "unix://\${XDG_RUNTIME_DIR:-}/docker.sock";
-
-  home.sessionVariablesExtra = ''
-    if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then
-      echo "Rootless Docker requires XDG_RUNTIME_DIR; DOCKER_HOST is not usable in this session." >&2
-    fi
-  '';
+  # Socket path environment variable for rootless daemon
+  home.sessionVariables = {
+    DOCKER_HOST = "unix:///run/user/1000/docker.sock";
+  };
 
   systemd.user.services.docker = {
     Unit = {
@@ -46,7 +45,7 @@ in
     };
     Service = {
       Environment = "PATH=${dockerPkg}/bin:/run/wrappers/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin";
-      ExecStart = "${dockerPkg}/bin/dockerd-rootless";
+      ExecStart = "${dockerPkg}/bin/dockerd-rootless --exec-opt native.cgroupdriver=cgroupfs";
       Type = "notify";
       NotifyAccess = "all";
       TimeoutStartSec = 120;
