@@ -1,22 +1,21 @@
 # ~/.config/home-manager/wsl.nix
-{ pkgs, ... }:
+{ ... }:
 
+let
+  skHelper = "/mnt/c/Windows/System32/OpenSSH/ssh-sk-helper.exe";
+in
 {
   home.sessionVariables = {
     # Routes xdg-open/CLI logins (az login, gh auth) directly to your default Windows browser
     BROWSER = "/mnt/c/Windows/System32/cmd.exe /c start";
+
+    # https://developers.yubico.com/SSH/Securing_SSH_and_git_with_FIDO2_on_WSL2.html
+    SSH_SK_HELPER = skHelper;
   };
 
-  home.packages = with pkgs; [
-    wsl2-ssh-agent
-  ];
+  services.ssh-agent.enable = true;
 
-  programs.zsh.initContent = ''
-    if ! wsl_agent_init="$(wsl2-ssh-agent)" ||
-       [[ -z "$wsl_agent_init" ]] ||
-       ! eval "$wsl_agent_init"; then
-      print -u2 "Failed to initialize the WSL SSH agent bridge."
-    fi
-    unset wsl_agent_init
-  '';
+  systemd.user.sessionVariables = {
+    SSH_SK_HELPER = skHelper;
+  };
 }
